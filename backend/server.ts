@@ -1,5 +1,7 @@
 require('dotenv').config();
+require('./utils/db_utils/db.utils.js');
 const express = require('express');
+
 
 const app = express();
 
