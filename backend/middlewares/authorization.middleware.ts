@@ -15,10 +15,11 @@ export default function authorizationMiddleware(req: Request,res: Response,next:
     try{
         if(req.headers['x-user-token']){
             const userData = auth.verifyToken(<string>req.headers['x-user-token']); 
+            
             req.userData = userData;
             next();
         }else{
-            return res.status(401).send('not authorized')
+            return res.status(401).send('Unauthorized')
         }
     }catch(err){
         return res.status(500).json({error: err});

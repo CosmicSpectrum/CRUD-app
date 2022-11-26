@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
 
 const UserSchema: Schema = new Schema({
@@ -16,10 +16,10 @@ UserSchema.pre('save', function(next): void{
     
     if(!user.isModified('password')) return next();
 
-    bcrypt.getSalt(process.env.SALT_WORK_FACTOR, (err: Error, salt: string)=>{
+    bcrypt.genSalt(Number(process.env.SALT_WORK_FACTOR), (err: Error | undefined, salt: string)=>{
         if(err) return next(err);
 
-        bcrypt.hash(user.password, salt, (err: Error, hash: string)=>{
+        bcrypt.hash(user.password, salt, (err: Error | undefined, hash: string)=>{
             if(err) return next(err);
 
             user.password = hash;
@@ -30,7 +30,7 @@ UserSchema.pre('save', function(next): void{
 
 //Password validation method added to the schema.
 UserSchema.methods.comparePassword = function(testedPassword: string, callback: Function){
-    bcrypt.compare(testedPassword, this.password, (err: Error, isMatch: Boolean)=>{
+    bcrypt.compare(testedPassword, this.password, (err: Error | undefined, isMatch: Boolean)=>{
         if(err) return callback(err);
 
         callback(null, isMatch);

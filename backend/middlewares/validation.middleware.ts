@@ -20,7 +20,7 @@ export const schemaValidator =  checkSchema({
             errorMessage: "first name must be a string",
         },
     },
-    username: {
+    emailAddress: {
         isEmail: {
             errorMessage: "invalid email address"
         }
@@ -30,11 +30,10 @@ export const schemaValidator =  checkSchema({
             errorMessage: "password length must be between 4-15 charactars",
             options: {min: 4, max: 15}
         },
-        custom: {
-            options: (value)=>{
-                return value.matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/, "i");
-            }
+        isStrongPassword: {
+            options: [{minLength: 8, minUppercase: 1, minNumbers: 1, minSymbols: 1}]
         }
+        
     },
     role: {
         isLength: {
