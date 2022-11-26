@@ -1,5 +1,6 @@
-import {Routes, Route} from "react-router-dom";
+import {Routes, Route,Navigate} from "react-router-dom";
 import Login from "./pages/login/Login";
+import CrudGrid from "./pages/crud/Crud";
 import {useEffect} from 'react';
 import { useMainContext } from "./context/context";
 import Cookies from 'js-cookie';
@@ -22,7 +23,9 @@ function App() {
 
   return (
     <Routes>
+      <Route path='/' element={Cookies.get('user-token') ? <Navigate pathname="/crud" /> : <Navigate pathname="/login" />} />
       <Route path='/login' element={<Login />} />
+      <Route path='/crud' element={<CrudGrid />} />
     </Routes>
   )
 }

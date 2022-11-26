@@ -1,13 +1,13 @@
 import { model, Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 
-
+//The user collection schema
 const UserSchema: Schema = new Schema({
     firstName: {type: String, required: true},
     lastName: {type: String, required: true},
     emailAddress: {type: String, required: true, index:{unique: true}},
     password: {type: String, required: true},
-    role: {type: String, required: true}  
+    role: {type: Boolean, required: true}  
 })
 
 //A middleware that hashs and updates the user password

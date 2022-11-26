@@ -12,9 +12,13 @@ export default class RequestsGate{
     static me(){
         return axios.get(`${this.#baseUrl}/auth/me`, {withCredentials: true}).then(res=>{
             return res.data;
-        }).catch(err=>{
-            console.error(err);
-            return false;
+        })
+    }
+    
+    static read(skip, limit){
+        return axios.get(`${this.#baseUrl}/users/read?skip=${skip}&limit=${limit}`, {withCredentials: true})
+        .then(res=>{
+            return res.data.users
         })
     }
 }

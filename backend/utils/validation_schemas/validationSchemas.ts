@@ -35,10 +35,7 @@ export const createSchema: Schema = {
         
     },
     role: {
-        isLength: {
-            options: {min: 4, max: 4}
-        }, 
-        isInt: true
+        isBoolean: true
     }
 }
 
@@ -67,10 +64,7 @@ export const updateSchema: Schema = {
         }
     },
     role: {
-        isLength: {
-            options: {min: 4, max: 4}
-        }, 
-        isInt: true
+        isBoolean: true
     }
 }
 
