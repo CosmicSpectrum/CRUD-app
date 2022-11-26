@@ -73,3 +73,10 @@ export const updateSchema: Schema = {
         isInt: true
     }
 }
+
+export const loginSchema: Schema = {
+    emailAddress: {
+        isEmail: true,
+        errorMessage: "invalid email address"
+    }
+}

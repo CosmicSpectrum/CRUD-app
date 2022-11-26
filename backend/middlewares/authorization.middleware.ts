@@ -13,8 +13,10 @@ declare global{
 
 export default function authorizationMiddleware(req: Request,res: Response,next: NextFunction){
     try{
-        if(req.headers['x-user-token']){
-            const userData = auth.verifyToken(<string>req.headers['x-user-token']); 
+        const token = req.headers['x-user-token'] ?? req.cookies['user-token'];
+        
+        if(token){
+            const userData = auth.verifyToken(<string>token); 
             
             req.userData = userData;
             next();
