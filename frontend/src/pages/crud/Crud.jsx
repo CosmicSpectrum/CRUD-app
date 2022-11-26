@@ -65,6 +65,7 @@ import RequestsGate from '../../network/requests.network';
         })
     }, [nextPage])
 
+
     const handleRowEditStart = (params, event) => {
       event.defaultMuiPrevented = true;
     };

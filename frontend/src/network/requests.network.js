@@ -21,4 +21,11 @@ export default class RequestsGate{
             return res.data.users
         })
     }
+
+    static create(row){
+        return axios.post(`${this.#baseUrl}/users/create`, row, {withCredentials: true})
+        .then(res=>{
+            return res.data;
+        })
+    }
 }
