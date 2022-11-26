@@ -13,20 +13,51 @@ export default class UserController{
        
        user.save(err=>{
             if(err) throw err;
-            return res.status(200).json(user);
+            return res.status(201).json(user);
        });
     }
 
-    static read(req: Request,res: Response){
-        res.send('peace')
+    /**
+     * read route will return all users to the client to show on the crud page.
+     * @param req express request object
+     * @param res express response object
+     */
+    static read(req: Request, res: Response){
+        userModel.find({}, (err: Error, users: Array<object>)=>{
+            if(err) throw err;
+
+            return res.status(200).json({users});
+        })
     }
 
+    /**
+     * this function will update a user info in the db
+     * @param req express request object
+     * @param res express response object
+     */
     static update(req: Request,res: Response){
+        const user = req.body;
 
+        userModel.replaceOne({emailAdrees: user.emailAddress},user, (err: Error, status: object)=>{
+            if(err) throw err;
+
+            return res.status(200).json(status);
+        })
     }
 
+    /**
+     * this function will delete a user from the database.
+     * @param req express request object
+     * @param res express response object
+     */
     static delete(req: Request,res: Response){
+        const {emailAdrees} = req.query
 
+        userModel.deleteOne({emailAdrees}, (err: Error, status: object)=>{
+            if(err) throw err;
+
+            return res.status(200).json(status);
+        })
     }
 
 }
