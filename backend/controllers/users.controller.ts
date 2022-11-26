@@ -23,11 +23,12 @@ export default class UserController{
      * @param res express response object
      */
     static read(req: Request, res: Response){
+        const {skip, limit} = req.query
         userModel.find({}, (err: Error, users: Array<object>)=>{
             if(err) throw err;
 
             return res.status(200).json({users});
-        })
+        }).skip(Number(skip)).limit(Number(limit));
     }
 
     /**
@@ -38,7 +39,7 @@ export default class UserController{
     static update(req: Request,res: Response){
         const user = req.body;
 
-        userModel.replaceOne({emailAdrees: user.emailAddress},user, (err: Error, status: object)=>{
+        userModel.updateOne({_id: user._id},user, (err: Error, status: object)=>{
             if(err) throw err;
 
             return res.status(200).json(status);
@@ -51,9 +52,9 @@ export default class UserController{
      * @param res express response object
      */
     static delete(req: Request,res: Response){
-        const {emailAdrees} = req.query
+        const {_id} = req.query
 
-        userModel.deleteOne({emailAdrees}, (err: Error, status: object)=>{
+        userModel.deleteOne({_id}, (err: Error, status: object)=>{
             if(err) throw err;
 
             return res.status(200).json(status);
