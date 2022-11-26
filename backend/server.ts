@@ -4,6 +4,7 @@ import express from 'express';
 import db from './utils/db_utils/db.utils';
 import userRoute from './routes/users.route';
 import authRoute from './routes/auth.route';
+import errorHandler from './middlewares/errorHandler.middleware';
 
 
 const app = express();
@@ -19,6 +20,7 @@ db
 app.use(express.json());
 app.use('/users',userRoute);
 app.use('/auth', authRoute);
+app.use(errorHandler)
 
 
 app.listen(process.env.PORT ?? 8080, ()=>console.log('server listening on 8080'));

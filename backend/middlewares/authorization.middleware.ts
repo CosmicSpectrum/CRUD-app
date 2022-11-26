@@ -22,6 +22,6 @@ export default function authorizationMiddleware(req: Request,res: Response,next:
             return res.status(401).send('Unauthorized')
         }
     }catch(err){
-        return res.status(500).json({error: err});
+        return res.status(401).send('unauthorized');
     }
 }

@@ -1,4 +1,4 @@
-import jwt, { JwtPayload, VerifyCallback, VerifyErrors } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { UserData } from '../interfaces/interfaces';
 
 export default class auth{
