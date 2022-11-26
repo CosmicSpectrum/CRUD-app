@@ -5,11 +5,9 @@ const bcrypt = require('bcrypt');
 const UserSchema: Schema = new Schema({
     firstName: {type: String, required: true},
     lastName: {type: String, required: true},
-    username: {type: String, required: true, index:{unique: true}},
+    emailAddress: {type: String, required: true, index:{unique: true}},
     password: {type: String, required: true},
-    emailAddress: {type: String, required: true},
-    homeAddress: {type: String, required: true},
-    role: {type: Number, required: true}  
+    role: {type: String, required: true}  
 })
 
 //A middleware that hashs and updates the user password
