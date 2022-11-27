@@ -23,6 +23,8 @@ import RequestsGate from '../../network/requests.network';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { useMainContext } from '../../context/context';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie'
 
   const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -30,6 +32,8 @@ import { useMainContext } from '../../context/context';
   
   function EditToolbar(props) {
     const { setRows, setRowModesModel } = props;
+    const Navigate = useNavigate();
+    const {userInfo} = useMainContext();
   
     const handleClick = () => {
       const _id = randomId();
@@ -39,11 +43,20 @@ import { useMainContext } from '../../context/context';
         [_id]: { mode: GridRowModes.Edit, fieldToFocus: 'firstName' },
       }));
     };
+
+    const logout = ()=>{
+      Cookie.remove('user-token');
+      Navigate('/');
+    }
+
   
     return (
       <GridToolbarContainer>
-        <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+       {userInfo?.role && <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
           Add record
+        </Button>}
+        <Button color="primary" onClick={logout}>
+          Logout
         </Button>
       </GridToolbarContainer>
     );
@@ -69,6 +82,7 @@ import { useMainContext } from '../../context/context';
         role: false
       }
     })
+    const {userInfo} = useMainContext()
 
     useEffect(()=>{
         RequestsGate.read()
@@ -79,9 +93,9 @@ import { useMainContext } from '../../context/context';
         })
     }, [])
 
-    const createOrUpdateRow = (row)=>{
+    const createOrUpdateRow = async (row)=>{
       if(row.isNew){
-        RequestsGate.create({firstName: row.firstName,
+        return RequestsGate.create({firstName: row.firstName,
           lastName: row.lastName, 
           emailAddress: row.emailAddress, 
           password: row.password, 
@@ -186,6 +200,7 @@ import { useMainContext } from '../../context/context';
   
     const processRowUpdate = (newRow) => {
       return createOrUpdateRow(newRow).then(finalRow=>{
+        console.log(finalRow);
         const updatedRow = { ...finalRow, isNew: false };
         setRows(rows.map((row) => ((row._id === finalRow._id || row.isNew) ? updatedRow : row)));
         setIsError(false);
@@ -227,7 +242,8 @@ import { useMainContext } from '../../context/context';
         align: 'center',
         renderCell: (value)=> <Checkbox checked={value.row.role} />
       },
-      {
+      ...(userInfo?.role ? 
+      [{
         field: 'actions',
         type: 'actions',
         headerName: 'Actions',
@@ -236,40 +252,40 @@ import { useMainContext } from '../../context/context';
         getActions: ({ id }) => {
           const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
   
-          if (isInEditMode) {
+            if (isInEditMode) {
+              return [
+                <GridActionsCellItem
+                  icon={<SaveIcon />}
+                  label="Save"
+                  onClick={handleSaveClick(id)}
+                />,
+                <GridActionsCellItem
+                  icon={<CancelIcon />}
+                  label="Cancel"
+                  className="textPrimary"
+                  onClick={handleCancelClick(id)}
+                  color="inherit"
+                />,
+              ];
+            }
+    
             return [
               <GridActionsCellItem
-                icon={<SaveIcon />}
-                label="Save"
-                onClick={handleSaveClick(id)}
+                icon={<EditIcon />}
+                label="Edit"
+                className="textPrimary"
+                onClick={handleEditClick(id)}
+                color="inherit"
               />,
               <GridActionsCellItem
-                icon={<CancelIcon />}
-                label="Cancel"
-                className="textPrimary"
-                onClick={handleCancelClick(id)}
+                icon={<DeleteIcon />}
+                label="Delete"
+                onClick={handleDeleteClick(id)}
                 color="inherit"
               />,
             ];
-          }
-  
-          return [
-            <GridActionsCellItem
-              icon={<EditIcon />}
-              label="Edit"
-              className="textPrimary"
-              onClick={handleEditClick(id)}
-              color="inherit"
-            />,
-            <GridActionsCellItem
-              icon={<DeleteIcon />}
-              label="Delete"
-              onClick={handleDeleteClick(id)}
-              color="inherit"
-            />,
-          ];
         },
-      },
+      }] : []),
     ];
   
     return (
