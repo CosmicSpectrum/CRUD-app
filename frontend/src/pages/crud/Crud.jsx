@@ -202,7 +202,7 @@ import Cookie from 'js-cookie'
       return createOrUpdateRow(newRow).then(finalRow=>{
         console.log(finalRow);
         const updatedRow = { ...finalRow, isNew: false };
-        setRows(rows.map((row) => ((row._id === finalRow._id || row.isNew) ? updatedRow : row)));
+        setRows(rows.map((row) => ((row._id === finalRow._id || row.isNew && row._id === newRow._id) ? updatedRow : row)));
         setIsError(false);
         setOpen(true);
         return updatedRow;
@@ -216,14 +216,15 @@ import Cookie from 'js-cookie'
     }
   
     const columns = [
-      { field: 'firstName', headerName: 'First Name', width: 100, editable: true },
-      { field: 'lastName', headerName: 'Last Name', editable: true,  },
+      { field: 'firstName', headerName: 'First Name', width: 100, editable: true, sortable: false},
+      { field: 'lastName', headerName: 'Last Name', editable: true,  sortable: false},
       {
         field: 'emailAddress',
         headerName: 'Email',
         type: 'string',
         width: 220,
-        editable: true
+        editable: true,
+        sortable: false
       },
       {
         field: 'password',
@@ -231,6 +232,7 @@ import Cookie from 'js-cookie'
         type: 'string',
         width: 220,
         editable: true,
+        sortable: false,
         renderCell: ()=>{return "********"},
       },
       {
@@ -240,6 +242,7 @@ import Cookie from 'js-cookie'
         width: 100,
         editable: true,
         align: 'center',
+        sortable: false,
         renderCell: (value)=> <Checkbox checked={value.row.role} />
       },
       ...(userInfo?.role ? 
@@ -247,6 +250,7 @@ import Cookie from 'js-cookie'
         field: 'actions',
         type: 'actions',
         headerName: 'Actions',
+        sortable: false,
         width: 100,
         cellClassName: 'actions',
         getActions: ({ id }) => {
@@ -333,7 +337,7 @@ import Cookie from 'js-cookie'
           }}
           experimentalFeatures={{ newEditingApi: true }}
         />
-        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Snackbar open={open} autoHideDuration={2000} onClose={handleClose}>
           <Alert onClose={handleClose} severity={isError ? 'error' : 'success'} sx={{ width: '100%' }}>
             {isError ? 'Something went wrong, try again later.' : 'Done successfully.'}
           </Alert>
