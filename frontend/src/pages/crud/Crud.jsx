@@ -20,13 +20,20 @@ import {
   } from '@mui/x-data-grid-generator';
   
 import RequestsGate from '../../network/requests.network';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import { useMainContext } from '../../context/context';
+
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
   
   function EditToolbar(props) {
     const { setRows, setRowModesModel } = props;
   
     const handleClick = () => {
       const _id = randomId();
-      setRows((oldRows) => [...oldRows, { _id, firstName: '', lastName: '', emailAddress: '', isNew: true }]);
+      setRows((oldRows) => [...oldRows, { _id, firstName: '', lastName: '', emailAddress: '',role: false, isNew: true }]);
       setRowModesModel((oldModel) => ({
         ...oldModel,
         [_id]: { mode: GridRowModes.Edit, fieldToFocus: 'firstName' },
@@ -50,44 +57,86 @@ import RequestsGate from '../../network/requests.network';
   export default function CrudGrid() {
     const [rows, setRows] = useState([]);
     const [rowModesModel, setRowModesModel] = useState({});
+    const [open, setOpen] = useState(false);
+    const [isError, setIsError] = useState(false);
+    const [currentErrors, setCurrentErrors] = useState({
+      id: null,
+      errors: {
+        firstName: false,
+        lastName: false,
+        emailAddress: false,
+        password: false,
+        role: false
+      }
+    })
 
     useEffect(()=>{
         RequestsGate.read()
         .then(users=>{
             setRows(prev=> [...prev, ...users]);
         }).catch(err=>{
-            errorHandler(err);
+            errorHandler(err,setIsError, setOpen);
         })
     }, [])
 
-    const createOrUpdateRow = async (row)=>{
-      try{
-        if(row.isNew){
-          const createdRow = await RequestsGate.create({firstName: row.firstName,
-            lastName: row.lastName, 
-            emailAddress: row.emailAddress, 
-            password: row.password, 
-            role: row.role
-          });
-          return createdRow;
-        }else{
-          RequestsGate.update({
-            _id: row._id,
-            firstName: row.firstName,
-            lastName: row.lastName,
-            emailAddress: row.emailAddress,
-            role: row.role
-          })
+    const createOrUpdateRow = (row)=>{
+      if(row.isNew){
+        RequestsGate.create({firstName: row.firstName,
+          lastName: row.lastName, 
+          emailAddress: row.emailAddress, 
+          password: row.password, 
+          role: row.role
+        }).then(newRow=>{
+          if(newRow){
+            return newRow;
+          }
+        }).catch(err=>{
+          handleBadRequest(err,row)
+        });
+      }else{
+        return RequestsGate.update({
+          _id: row._id,
+          firstName: row.firstName,
+          lastName: row.lastName,
+          emailAddress: row.emailAddress,
+          role: row.role
+        }).then(res=>{
           return row;
-        }
-      }catch(err){
-        errorHandler(err);
+        }).catch(err=>{
+          handleBadRequest(err,row);
+        })
       }
 
     }
 
+    const handleBadRequest = (err,row)=>{
+      const errors = errorHandler(err);
+      setCurrentErrors(prev=>{
+        prev["id"] = row._id;
+        for(let key in prev.errors){
+          if(errors.includes(key)){
+            prev.errors[key] = true;
+          }else{
+            prev.errors[key] = false;
+          }
+        }
+        return prev;
+      })
+    }
+
+    console.log(currentErrors);
+
+
     const handleRowEditStart = (params, event) => {
       event.defaultMuiPrevented = true;
+    };
+
+    const handleClose = (event, reason) => {
+      if (reason === 'clickaway') {
+        return;
+      }
+  
+      setOpen(false);
     };
   
     const handleRowEditStop = (params, event) => {
@@ -99,6 +148,10 @@ import RequestsGate from '../../network/requests.network';
     };
   
     const handleSaveClick = (id) => () => {
+      setCurrentErrors(prev=>{
+        prev['id'] = null;
+        return prev;
+      })
       setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
     };
   
@@ -106,11 +159,19 @@ import RequestsGate from '../../network/requests.network';
       RequestsGate.delete(id).then(result=>{
         if(result.deletedCount === 1){
           setRows(rows.filter((row) => row._id !== id));
+            setIsError(false);
+            setOpen(true);
         }
+      }).catch(err=>{
+        errorHandler(err, setIsError,setOpen)
       });
     };
   
     const handleCancelClick = (id) => () => {
+      setCurrentErrors(prev=>{
+        prev['id'] = null;
+        return prev;
+      })
       setRowModesModel({
         ...rowModesModel,
         [id]: { mode: GridRowModes.View, ignoreModifications: true },
@@ -127,19 +188,27 @@ import RequestsGate from '../../network/requests.network';
       return createOrUpdateRow(newRow).then(finalRow=>{
         const updatedRow = { ...finalRow, isNew: false };
         setRows(rows.map((row) => ((row._id === finalRow._id || row.isNew) ? updatedRow : row)));
+        setIsError(false);
+        setOpen(true);
         return updatedRow;
       })
     };
+
+    const handleError = (params)=>{
+      if(currentErrors.id === params.id){
+          return currentErrors.errors[params.field] ? 'errorInput' : null
+      }
+    }
   
     const columns = [
-      { field: 'firstName', headerName: 'First Name', width: 180, editable: true },
-      { field: 'lastName', headerName: 'Last Name', editable: true },
+      { field: 'firstName', headerName: 'First Name', width: 100, editable: true },
+      { field: 'lastName', headerName: 'Last Name', editable: true,  },
       {
         field: 'emailAddress',
         headerName: 'Email',
         type: 'string',
         width: 220,
-        editable: true,
+        editable: true
       },
       {
         field: 'password',
@@ -208,12 +277,16 @@ import RequestsGate from '../../network/requests.network';
         sx={{
           height: 500,
           width: '100%',
+          margin: '0 auto',
           '& .actions': {
             color: 'text.secondary',
           },
           '& .textPrimary': {
             color: 'text.primary',
           },
+          '& .errorInput': {
+            border: '3px solid rgb(209, 56, 72)',
+          }
         }}
       >
         <DataGrid
@@ -224,6 +297,7 @@ import RequestsGate from '../../network/requests.network';
           onRowModesModelChange={(newModel) => setRowModesModel(newModel)}
           onRowEditStart={handleRowEditStart}
           onRowEditStop={handleRowEditStop}
+          getCellClassName={handleError}
           onProcessRowUpdateError={err=>console.log(err)}
           isCellEditable={(cell)=>{ 
             if(cell.field === 'password'){
@@ -243,6 +317,11 @@ import RequestsGate from '../../network/requests.network';
           }}
           experimentalFeatures={{ newEditingApi: true }}
         />
+        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+          <Alert onClose={handleClose} severity={isError ? 'error' : 'success'} sx={{ width: '100%' }}>
+            {isError ? 'Something went wrong, try again later.' : 'Done successfully.'}
+          </Alert>
+      </Snackbar>
       </Box>
     );
   }
