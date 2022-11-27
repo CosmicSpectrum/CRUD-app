@@ -1,4 +1,4 @@
-import React, {useRef, useState,useEffect} from 'react';
+import React, {useState,useEffect} from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -50,21 +50,41 @@ import RequestsGate from '../../network/requests.network';
   export default function CrudGrid() {
     const [rows, setRows] = useState([]);
     const [rowModesModel, setRowModesModel] = useState({});
-    const [nextPage, setNextPage] = useState(true);
-    const pagenationRef = useRef({
-        skip: 0,
-        limit: 10
-    })
 
     useEffect(()=>{
-        RequestsGate.read(pagenationRef.current.skip, pagenationRef.current.limit)
+        RequestsGate.read()
         .then(users=>{
             setRows(prev=> [...prev, ...users]);
         }).catch(err=>{
             errorHandler(err);
         })
-    }, [nextPage])
+    }, [])
 
+    const createOrUpdateRow = async (row)=>{
+      try{
+        if(row.isNew){
+          const createdRow = await RequestsGate.create({firstName: row.firstName,
+            lastName: row.lastName, 
+            emailAddress: row.emailAddress, 
+            password: row.password, 
+            role: row.role
+          });
+          return createdRow;
+        }else{
+          RequestsGate.update({
+            _id: row._id,
+            firstName: row.firstName,
+            lastName: row.lastName,
+            emailAddress: row.emailAddress,
+            role: row.role
+          })
+          return row;
+        }
+      }catch(err){
+        errorHandler(err);
+      }
+
+    }
 
     const handleRowEditStart = (params, event) => {
       event.defaultMuiPrevented = true;
@@ -83,7 +103,11 @@ import RequestsGate from '../../network/requests.network';
     };
   
     const handleDeleteClick = (id) => () => {
-      setRows(rows.filter((row) => row._id !== id));
+      RequestsGate.delete(id).then(result=>{
+        if(result.deletedCount === 1){
+          setRows(rows.filter((row) => row._id !== id));
+        }
+      });
     };
   
     const handleCancelClick = (id) => () => {
@@ -100,9 +124,11 @@ import RequestsGate from '../../network/requests.network';
     };
   
     const processRowUpdate = (newRow) => {
-      const updatedRow = { ...newRow, isNew: false };
-      setRows(rows.map((row) => (row._id === newRow._id ? updatedRow : row)));
-      return updatedRow;
+      return createOrUpdateRow(newRow).then(finalRow=>{
+        const updatedRow = { ...finalRow, isNew: false };
+        setRows(rows.map((row) => ((row._id === finalRow._id || row.isNew) ? updatedRow : row)));
+        return updatedRow;
+      })
     };
   
     const columns = [
@@ -198,6 +224,7 @@ import RequestsGate from '../../network/requests.network';
           onRowModesModelChange={(newModel) => setRowModesModel(newModel)}
           onRowEditStart={handleRowEditStart}
           onRowEditStop={handleRowEditStop}
+          onProcessRowUpdateError={err=>console.log(err)}
           isCellEditable={(cell)=>{ 
             if(cell.field === 'password'){
               return cell.row.isNew

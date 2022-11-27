@@ -15,8 +15,8 @@ export default class RequestsGate{
         })
     }
     
-    static read(skip, limit){
-        return axios.get(`${this.#baseUrl}/users/read?skip=${skip}&limit=${limit}`, {withCredentials: true})
+    static read(){
+        return axios.get(`${this.#baseUrl}/users/read`, {withCredentials: true})
         .then(res=>{
             return res.data.users
         })
@@ -25,6 +25,18 @@ export default class RequestsGate{
     static create(row){
         return axios.post(`${this.#baseUrl}/users/create`, row, {withCredentials: true})
         .then(res=>{
+            return res.data;
+        })
+    }
+
+    static update(row){
+        return axios.patch(`${this.#baseUrl}/users/update`, row, {withCredentials: true}).then(res=>{
+            return res.data;
+        })
+    }
+
+    static delete(rowId){
+        return axios.delete(`${this.#baseUrl}/users/delete?_id=${rowId}`, {withCredentials: true}).then(res=>{
             return res.data;
         })
     }

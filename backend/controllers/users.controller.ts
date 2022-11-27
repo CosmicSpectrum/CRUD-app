@@ -13,6 +13,7 @@ export default class UserController{
        
        user.save(err=>{
             if(err) throw err;
+            delete user.password;
             return res.status(201).json(user);
        });
     }
@@ -23,12 +24,12 @@ export default class UserController{
      * @param res express response object
      */
     static read(req: Request, res: Response){
-        const {skip, limit} = req.query
-        userModel.find({}, (err: Error, users: Array<object>)=>{
+        userModel.find({},['firstName','lastName','emailAddress','role'] ,
+        (err: Error, users: Array<object>)=>{
             if(err) throw err;
 
             return res.status(200).json({users});
-        }).skip(Number(skip)).limit(Number(limit));
+        })
     }
 
     /**
