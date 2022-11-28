@@ -12,31 +12,36 @@ export default class AuthController {
      * @returns a response with http status code, and if seccessful with a session token as a cookie.
      */
     static login(req: Request, res: Response){
-        const {emailAddress, password} = req.body;
-        if(emailAddress && password){
-            
-            userModel.findOne({emailAddress},(err:Error, user: any)=>{
-                if(err) throw err;
+        try{
 
-                if(user){
-                    user.comparePassword(password, (err: Error,isMatch: boolean)=>{
-                        if(err) throw err;
+            const {emailAddress, password} = req.body;
+            if(emailAddress && password){
+                
+                userModel.findOne({emailAddress},(err:Error, user: any)=>{
+                    if(err) throw err;
     
-                        if(isMatch){
-                            return res
-                            .cookie('user-token', auth.signToken({id: user._id, role: user.role}))
-                            .status(200)
-                            .json({id: user._id, role: user.role});
-                        }else{
-                            return res.status(401).json({error: 'wrong credentials'})
-                        }
-                    })
-                }else{
-                    return res.status(404).json({error: 'wrong credentials'})
-                }
-            })
-        }else{
-            return res.status(400).json({error: 'missing credentials'});
+                    if(user){
+                        user.comparePassword(password, (err: Error,isMatch: boolean)=>{
+                            if(err) throw err;
+        
+                            if(isMatch){
+                                return res
+                                .cookie('user-token', auth.signToken({id: user._id, role: user.role}))
+                                .status(200)
+                                .json({id: user._id, role: user.role});
+                            }else{
+                                return res.status(401).json({error: 'wrong credentials'})
+                            }
+                        })
+                    }else{
+                        return res.status(404).json({error: 'wrong credentials'})
+                    }
+                })
+            }else{
+                return res.status(400).json({error: 'missing credentials'});
+            }
+        }catch(err){
+            return res.status(500).send("somthing went wrong");
         }
     }
 

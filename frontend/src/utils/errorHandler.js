@@ -16,7 +16,7 @@ export default function errorHandler(err, setIsError, setOpen){
 
 function getBadFields(errorsArray){
     let problematicParams = [];
-    errorsArray.map((error => problematicParams.push(error.param)));
+    errorsArray.map((error => problematicParams.push(error.param ? error.param : error)));
     return problematicParams;
 
 }

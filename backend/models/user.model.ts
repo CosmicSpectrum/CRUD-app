@@ -1,5 +1,7 @@
-import { model, Schema } from 'mongoose';
+import { Document, model, Error, Schema, MongooseError } from 'mongoose';
 import bcrypt from 'bcrypt';
+import { NextFunction } from 'express';
+import { userInfo } from 'os';
 
 //The user collection schema
 const UserSchema: Schema = new Schema({

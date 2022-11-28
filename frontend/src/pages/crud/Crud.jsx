@@ -138,8 +138,6 @@ import Cookie from 'js-cookie'
       })
     }
 
-    console.log(currentErrors);
-
 
     const handleRowEditStart = (params, event) => {
       event.defaultMuiPrevented = true;
@@ -200,7 +198,6 @@ import Cookie from 'js-cookie'
   
     const processRowUpdate = (newRow) => {
       return createOrUpdateRow(newRow).then(finalRow=>{
-        console.log(finalRow);
         const updatedRow = { ...finalRow, isNew: false };
         setRows(rows.map((row) => ((row._id === finalRow._id || row.isNew && row._id === newRow._id) ? updatedRow : row)));
         setIsError(false);

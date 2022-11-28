@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import userModel from "../models/user.model";
+import errorHandler from "../utils/mongoose_err_handler/errorHandler.utils";
 
 export default class UserController{
+
     
     /**
      * this route will create a new uesr in the users collection.
@@ -9,13 +11,16 @@ export default class UserController{
      * @param res express response object
      */
     static create(req: Request, res: Response){
-       const user = new userModel(req.body);
-       
-       user.save(err=>{
-            if(err) throw err;
-            delete user.password;
+        const user = new userModel(req.body);
+        
+        user.save((err)=>{
+            if(err){
+              return errorHandler(err, res);
+            }
+            
+
             return res.status(201).json(user);
-       });
+        })       
     }
 
     /**
@@ -26,7 +31,7 @@ export default class UserController{
     static read(req: Request, res: Response){
         userModel.find({},['firstName','lastName','emailAddress','role'] ,
         (err: Error, users: Array<object>)=>{
-            if(err) throw err;
+            if(err) errorHandler(err, res);
 
             return res.status(200).json({users});
         })
@@ -41,7 +46,7 @@ export default class UserController{
         const user = req.body;
 
         userModel.updateOne({_id: user._id},user, (err: Error, status: object)=>{
-            if(err) throw err;
+            if(err)  errorHandler(err,res);
 
             return res.status(200).json(status);
         })
@@ -56,7 +61,7 @@ export default class UserController{
         const {_id} = req.query
 
         userModel.deleteOne({_id}, (err: Error, status: object)=>{
-            if(err) throw err;
+            if(err) errorHandler(err, res);
 
             return res.status(200).json(status);
         })
